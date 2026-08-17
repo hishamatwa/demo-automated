@@ -1,0 +1,8 @@
+---
+- name: Build Kubernetes cluster
+  hosts: localhost
+  connection: local
+  become: true
+
+  roles:
+    - kubernetes_cluster

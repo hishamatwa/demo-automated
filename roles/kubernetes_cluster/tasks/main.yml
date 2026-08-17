@@ -1,0 +1,12 @@
+---
+- name: Install and configure containerd
+  ansible.builtin.import_tasks: containerd.yml
+
+- name: Install Kubernetes
+  ansible.builtin.import_tasks: kubernetes.yml
+
+- name: Initialize Kubernetes cluster
+  ansible.builtin.import_tasks: kubeadm.yml
+
+- name: Install Calico CNI
+  ansible.builtin.import_tasks: calico.yml
