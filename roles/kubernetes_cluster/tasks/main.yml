@@ -17,6 +17,9 @@
 - name: Install Metrics Server
   ansible.builtin.import_tasks: metrics_server.yml
 
+- name: Install Helm
+  ansible.builtin.import_tasks: helm.yml
+
 - name: Deploy Kafka
   ansible.builtin.import_tasks: kafka.yml
 
