@@ -1,0 +1,37 @@
+image:
+  repository: bitnamilegacy/kafka
+  tag: 3.9.0-debian-12-r4
+
+listeners:
+  client:
+    protocol: PLAINTEXT
+  controller:
+    protocol: PLAINTEXT
+  interbroker:
+    protocol: PLAINTEXT
+
+controller:
+  replicaCount: 3
+  controllerOnly: false
+
+  overrideConfiguration:
+    controller.quorum.voters: "0@kafka-controller-0.kafka-controller-headless.kafka.svc.cluster.local:9093,1@kafka-controller-1.kafka-controller-headless.kafka.svc.cluster.local:9093,2@kafka-controller-2.kafka-controller-headless.kafka.svc.cluster.local:9093"
+
+broker:
+  replicaCount: 0
+
+provisioning:
+  enabled: true
+
+  topics:
+    - name: alarms
+      partitions: 3
+      replicationFactor: 3
+
+    - name: business
+      partitions: 3
+      replicationFactor: 3
+
+    - name: operations
+      partitions: 3
+      replicationFactor: 3

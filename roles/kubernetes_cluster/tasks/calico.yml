@@ -1,37 +1,15 @@
 ---
-- name: Create Calico API bootstrap configuration
-  ansible.builtin.copy:
-    dest: /tmp/calico-bootstrap.yml
-    content: |
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: tigera-operator
-
-      ---
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: kubernetes-services-endpoint
-        namespace: tigera-operator
-      data:
-        KUBERNETES_SERVICE_HOST: "192.168.8.145"
-        KUBERNETES_SERVICE_PORT: "6443"
-
-- name: Apply Calico API bootstrap configuration
-  ansible.builtin.command:
-    cmd: kubectl apply -f /tmp/calico-bootstrap.yml
-  become_user: aeyetech
-
 - name: Install Calico CRDs
   ansible.builtin.command:
-    cmd: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.32.1/manifests/v1_crd_projectcalico_org.yaml
-  become_user: aeyetech
+    cmd: kubectl apply --server-side -f https://raw.githubusercontent.com/projectcalico/calico/v3.32.1/manifests/v1_crd_projectcalico_org.yaml
+  become: false
+  changed_when: true
 
-- name: Install Calico operator
+- name: Install Tigera Operator
   ansible.builtin.command:
     cmd: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.32.1/manifests/tigera-operator.yaml
-  become_user: aeyetech
+  become: false
+  changed_when: true
 
 - name: Create Calico configuration
   ansible.builtin.copy:
@@ -43,19 +21,15 @@
         name: default
       spec:
         calicoNetwork:
-          linuxDataplane: BPF
           ipPools:
             - cidr: 10.244.0.0/16
               encapsulation: VXLANCrossSubnet
               natOutgoing: Enabled
               nodeSelector: all()
+    mode: "0644"
 
-- name: Install Calico
+- name: Apply Calico configuration
   ansible.builtin.command:
     cmd: kubectl apply -f /tmp/calico-installation.yml
-  become_user: aeyetech
-
-- name: Allow workloads on single master node
-  ansible.builtin.command:
-    cmd: kubectl taint nodes master1 node-role.kubernetes.io/control-plane:NoSchedule-
-  become_user: aeyetech
+  become: false
+  changed_when: true

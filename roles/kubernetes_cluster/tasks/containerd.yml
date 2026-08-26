@@ -1,7 +1,9 @@
 ---
-- name: Install containerd
+- name: Install containerd and Docker
   ansible.builtin.apt:
-    name: containerd.io
+    name:
+      - containerd
+      - docker.io
     state: present
     update_cache: true
 
@@ -11,19 +13,17 @@
     state: directory
     mode: "0755"
 
+- name: Generate default containerd configuration
+  ansible.builtin.command:
+    cmd: containerd config default
+  register: containerd_default_config
+  changed_when: false
+
 - name: Configure containerd for Kubernetes
   ansible.builtin.copy:
     dest: /etc/containerd/config.toml
+    content: "{{ containerd_default_config.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') }}"
     mode: "0644"
-    backup: true
-    content: |
-      version = 3
-
-      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
-        runtime_type = 'io.containerd.runc.v2'
-
-        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
-          SystemdCgroup = true
   register: containerd_config
 
 - name: Enable and start containerd
@@ -37,3 +37,9 @@
     name: containerd
     state: restarted
   when: containerd_config.changed
+
+- name: Enable and start Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

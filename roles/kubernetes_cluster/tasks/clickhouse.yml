@@ -1,0 +1,22 @@
+---
+- name: Deploy ClickHouse
+  ansible.builtin.command:
+    cmd: >
+      helm upgrade --install clickhouse-operator
+      {{ playbook_dir }}/helm-charts/altinity-clickhouse-operator
+      -n clickhouse-operator
+      --create-namespace
+      -f {{ playbook_dir }}/clickhouse/values.yaml
+      --wait
+      --timeout 10m
+  become: false
+  changed_when: true
+
+- name: Apply analytics schema
+  ansible.builtin.shell: >
+    kubectl exec -i -n clickhouse
+    chi-clickhouse-clickhouse-0-0-0 --
+    clickhouse-client
+    < {{ playbook_dir }}/clickhouse/analytics_schema.sql
+  become: false
+  changed_when: true

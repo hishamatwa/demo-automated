@@ -1,12 +1,27 @@
 ---
-- name: Install and configure containerd
+- name: Configure containerd
   ansible.builtin.import_tasks: containerd.yml
 
-- name: Install Kubernetes
+- name: Prepare Kubernetes
   ansible.builtin.import_tasks: kubernetes.yml
 
 - name: Initialize Kubernetes cluster
   ansible.builtin.import_tasks: kubeadm.yml
 
-- name: Install Calico CNI
+- name: Install Calico
   ansible.builtin.import_tasks: calico.yml
+
+- name: Install storage provisioner
+  ansible.builtin.import_tasks: storage.yml
+
+- name: Install Metrics Server
+  ansible.builtin.import_tasks: metrics_server.yml
+
+- name: Deploy Kafka
+  ansible.builtin.import_tasks: kafka.yml
+
+- name: Deploy ClickHouse
+  ansible.builtin.import_tasks: clickhouse.yml
+
+- name: Deploy Kafka Connect
+  ansible.builtin.import_tasks: kafka_connect.yml

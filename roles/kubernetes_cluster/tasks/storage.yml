@@ -1,0 +1,11 @@
+---
+- name: Install Local Path Storage Provisioner
+  ansible.builtin.command:
+    cmd: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.36/deploy/local-path-storage.yaml
+  become_user: hisham
+
+- name: Wait for Local Path Provisioner
+  ansible.builtin.command:
+    cmd: kubectl rollout status deployment/local-path-provisioner -n local-path-storage --timeout=120s
+  become_user: hisham
+  changed_when: false

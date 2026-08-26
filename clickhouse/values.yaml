@@ -1,0 +1,84 @@
+additionalResources:
+  - |
+    apiVersion: clickhouse-keeper.altinity.com/v1
+    kind: ClickHouseKeeperInstallation
+    metadata:
+      name: clickhouse-keeper
+      namespace: clickhouse
+
+    spec:
+      configuration:
+        clusters:
+          - name: keeper
+            layout:
+              replicasCount: 1
+
+      defaults:
+        templates:
+          podTemplate: keeper-pod
+          volumeClaimTemplate: keeper-data
+
+      templates:
+        podTemplates:
+          - name: keeper-pod
+            spec:
+              containers:
+                - name: clickhouse-keeper
+                  image: clickhouse/clickhouse-keeper:latest
+                  imagePullPolicy: IfNotPresent
+
+        volumeClaimTemplates:
+          - name: keeper-data
+            spec:
+              storageClassName: local-path
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 5Gi
+
+  - |
+    apiVersion: clickhouse.altinity.com/v1
+    kind: ClickHouseInstallation
+    metadata:
+      name: clickhouse
+      namespace: clickhouse
+
+    spec:
+      configuration:
+        users:
+          default/networks/ip:
+            - "0.0.0.0/0"
+            - "::/0"
+          default/profile: default
+          default/quota: default
+
+        clusters:
+          - name: clickhouse
+            layout:
+              shardsCount: 1
+              replicasCount: 1
+
+      defaults:
+        templates:
+          podTemplate: clickhouse-pod
+          dataVolumeClaimTemplate: clickhouse-data
+
+      templates:
+        podTemplates:
+          - name: clickhouse-pod
+            spec:
+              containers:
+                - name: clickhouse
+                  image: clickhouse/clickhouse-server:latest
+                  imagePullPolicy: IfNotPresent
+
+        volumeClaimTemplates:
+          - name: clickhouse-data
+            spec:
+              storageClassName: local-path
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 20Gi

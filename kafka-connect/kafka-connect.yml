@@ -1,0 +1,80 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-connect
+  namespace: kafka
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: kafka-connect
+
+  template:
+    metadata:
+      labels:
+        app: kafka-connect
+
+    spec:
+      containers:
+        - name: kafka-connect
+          image: kafka-connect-clickhouse:1.0
+          imagePullPolicy: Never
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+
+          env:
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              value: kafka.kafka.svc.cluster.local:9092
+
+            - name: CONNECT_GROUP_ID
+              value: kafka-connect
+
+            - name: CONNECT_CONFIG_STORAGE_TOPIC
+              value: connect-configs
+
+            - name: CONNECT_OFFSET_STORAGE_TOPIC
+              value: connect-offsets
+
+            - name: CONNECT_STATUS_STORAGE_TOPIC
+              value: connect-status
+
+            - name: CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR
+              value: "3"
+
+            - name: CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR
+              value: "3"
+
+            - name: CONNECT_STATUS_STORAGE_REPLICATION_FACTOR
+              value: "3"
+
+            - name: CONNECT_KEY_CONVERTER
+              value: org.apache.kafka.connect.storage.StringConverter
+
+            - name: CONNECT_VALUE_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+
+            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+              value: kafka-connect
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-connect
+  namespace: kafka
+
+spec:
+  selector:
+    app: kafka-connect
+
+  ports:
+    - port: 8083
+      targetPort: 8083

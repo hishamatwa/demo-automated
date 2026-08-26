@@ -1,0 +1,19 @@
+---
+- name: Deploy Kafka with Helm
+  ansible.builtin.command:
+    cmd: >
+      helm upgrade --install kafka
+      {{ playbook_dir }}/helm-charts/kafka
+      --namespace kafka
+      --create-namespace
+      --values {{ playbook_dir }}/kafka/values.yaml
+      --wait
+      --timeout 10m
+  become: false
+  changed_when: true
+
+- name: Wait for Kafka controllers
+  ansible.builtin.command:
+    cmd: kubectl rollout status statefulset/kafka-controller -n kafka --timeout=10m
+  become: false
+  changed_when: false
